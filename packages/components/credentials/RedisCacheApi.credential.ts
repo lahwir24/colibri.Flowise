@@ -16,19 +16,19 @@ class RedisCacheApi implements INodeCredential {
                 label: 'Redis Host',
                 name: 'redisCacheHost',
                 type: 'string',
-                default: 'red-ct7brppu0jms73door30'
+                default: process.env.REDIS_HOST
             },
             {
                 label: 'Port',
                 name: 'redisCachePort',
                 type: 'number',
-                default: '6379'
+                default: process.env.REDIS_PORT
             },
             {
                 label: 'User',
                 name: 'redisCacheUser',
                 type: 'string',
-                placeholder: '<REDIS_USERNAME>'
+                placeholder: '<REDIS_USER>'
             },
             {
                 label: 'Password',
