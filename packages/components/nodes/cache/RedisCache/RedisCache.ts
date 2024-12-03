@@ -97,9 +97,11 @@ class RedisCache implements INode {
             const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
 
             const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
-
+            const url = new URL(redisUrl);
+            const port = portStr ? parseInt(portStr) : url.port || 6379;
+            const host = host || url.hostname;
             client = getRedisClientbyOption({
-                port: portStr ? parseInt(portStr) : 6379,
+                port,
                 host,
                 username,
                 password,
