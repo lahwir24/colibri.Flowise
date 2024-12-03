@@ -10,22 +10,22 @@ import { escapeAllStrings, escapeSpecialChars, unEscapeSpecialChars } from './ut
 let redisClientSingleton: ReturnType<typeof createClient>
 let redisClientOption: RedisClientOptions
 
-const getRedisClient = async (option: RedisClientOptions) => {
-    if (!redisClientSingleton) {
+const getRedisClient = async (option: RedisClientOptions) => { 
+    if (!redisClientSingleton) { 
         // if client doesn't exists
-        redisClientSingleton = createClient(option)
+        redisClientSingleton = createClient({ url: 'redis://red-ct36n1l2ng1s739oaing:6379' })
         await redisClientSingleton.connect()
         redisClientOption = option
-        return redisClientSingleton
-    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
+        return redisClientSingleton 
+    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) { 
         // if client exists but option changed
         redisClientSingleton.quit()
-        redisClientSingleton = createClient(option)
+        redisClientSingleton = createClient({ url: 'redis://red-ct36n1l2ng1s739oaing:6379' })
         await redisClientSingleton.connect()
         redisClientOption = option
-        return redisClientSingleton
+        return redisClientSingleton 
     }
-    return redisClientSingleton
+    return redisClientSingleton 
 }
 
 class Redis_VectorStores implements INode {
