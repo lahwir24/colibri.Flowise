@@ -97,18 +97,33 @@ class RedisCache implements INode {
             const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
 
             const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
-            const url = new URL(redisUrl);
-            const port = portStr ? parseInt(portStr) : parseInt(url.port) || 6379;
-            const urlHost = host || url.hostname; // Renommer la variable host
+            
+
             client = getRedisClientbyOption({
-                port,
-                host: urlHost,
+                port: portStr ? parseInt(portStr) : 6379,
+                host,
                 username,
                 password,
                 ...tlsOptions
             })
         } else {
-            client = getRedisClientbyUrl(redisUrl)
+            try {
+                const url = new URL(redisUrl); // Vérifier si l'URL est valide
+                const port = portStr ? parseInt(portStr) : parseInt(url.port) || 6379;
+                const urlHost = host || url.hostname;
+
+                client = getRedisClientbyOption({
+                    port,
+                    host: urlHost,
+                    username,
+                    password,
+                    ...tlsOptions
+                });
+            } catch (error) {
+                // Gérer l'erreur si l'URL est invalide
+                console.error('URL Redis invalide:', redisUrl);
+                throw error; // Propager l'erreur
+            }
         }
 
         const redisClient = new LangchainRedisCache(client)
