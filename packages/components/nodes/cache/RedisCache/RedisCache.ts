@@ -83,41 +83,28 @@ class RedisCache implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const ttl = nodeData.inputs?.ttl as string
+        const ttl = nodeData.inputs?.ttl as string;
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
-
-        const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
-        const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
-        const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
-        const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
-        const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
-
-        const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
+        const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData) || process.env.REDIS_URL;
 
         let client: Redis;
         if (!redisUrl || redisUrl === '') {
-            client = getRedisClientbyOption({
-                port: portStr ? parseInt(portStr) : 6379,
-                host,
-                username,
-                password,
-                ...tlsOptions
-            })
+            const username = getCredentialParam('redisCacheUser', credentialData, nodeData) || process.env.REDIS_USER;
+            const password = getCredentialParam('redisCachePwd', credentialData, nodeData) || process.env.REDIS_PASSWORD;
+            const portStr = getCredentialParam('redisCachePort', credentialData, nodeData) || process.env.REDIS_PORT;
+            const host = getCredentialParam('redisCacheHost', credentialData, nodeData) || process.env.REDIS_HOST;
+            const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData);
+            const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {};
+            client = getRedisClientbyOption({ port: portStr ? parseInt(portStr) : 6379, host, username, password, ...tlsOptions });
         } else {
             try {
                 const url = new URL(redisUrl); // Vérifier si l'URL est valide
-                const port = portStr ? parseInt(portStr) : parseInt(url.port) || 6379;
-                const urlHost = host || url.hostname;
-
-                client = getRedisClientbyOption({
-                    port,
-                    host: urlHost,
-                    username,
-                    password,
-                    ...tlsOptions
-                });
+                const port = parseInt(url.port) || 6379;
+                const urlHost = url.hostname;
+                const username = url.username || process.env.REDIS_USER; // Prioriser l'URL si disponible
+                const password = url.password || process.env.REDIS_PASSWORD; // Prioriser l'URL si disponible
+                client = getRedisClientbyOption({ port, host: urlHost, username, password, ...tlsOptions });
             } catch (error) {
                 // Gérer l'erreur si l'URL est invalide
                 console.error('URL Redis invalide:', redisUrl);
